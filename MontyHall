@@ -1,0 +1,117 @@
+---
+title: "The Monty Hall Problem"
+author: "Edmund Tran"
+date: "December 2, 2015"
+output: html_document
+runtime: shiny
+---
+
+Suppose you are on a game show. You are presented with three doors. The host explains that behind one of the doors is a brand new car, but the other two doors will have a goat. You will receive the prize behind the door that you pick.
+
+![three doors](https://puzzlewocky.files.wordpress.com/2015/04/3doors3.jpg?w=640&h=335)
+
+So you pick a door, in hopes of winning the car and not a goat that will just eat up your lawn. If that was all there was to the game, we can see that:
+
+**P(winning) = 1/3**
+
+because there are three doors and one winning door.
+
+However, there is a twist. The host knows what is behind each door. Instead of opening the door that you picked, he opens one of the other doors that has a goat behind it. Then he asks you whether you would like to stay with your original pick or switch your choice to the other closed door. What should you do?
+
+
+We want to analyze if there is a difference between
+
+**P(winning by switching) and P(winning by not switching)**
+
+You might think that since there are only two doors left, they should both have an equal chance of having a car.
+
+
+Let's run a simulation in R of many trials of this game,
+and track when switching resulted in a win and when it was better not to switch. The results might be surprising!
+
+```{r, echo=FALSE}
+# slider for number of trials
+inputPanel(
+  sliderInput("trial_adjust", label = "Number of trials:",
+              min = 10, max = 1000, value = 10, step = 10)
+)
+
+# simulation with selected number of trials
+doors <- c("A", "B","C")
+switch_wins = 0
+no_switch_wins = 0
+
+renderPlot({
+  for (i in 1:input$trial_adjust){
+        prize <- sample(doors)[1]
+        pick <- sample(doors)[1]
+        open <- sample(doors[which(doors != pick & doors != prize)])[1]
+        new_pick <- doors[which(doors != pick & doors != open)]
+        if (new_pick == prize)
+        {switch_wins = switch_wins + 1}
+        if (pick == prize)
+        {no_switch_wins = no_switch_wins + 1}
+  }
+  barplot(c(switch_wins, no_switch_wins),
+          names.arg = c("Switch", "Don't Switch"),
+          xlab = "Strategy", ylab = "Number of wins",
+          main = "Comparison of switching strategies")
+})
+```
+
+As the number of trials approach infinity, the results will tend towards the theoretical probabilities of the two strategies. We can see from the simulation that switching results in about twice as many wins as not switching, implying that:
+
+_P(winning by switching) = 2 * P(winning by not switching)_
+
+_P(winning by switching) + P(winning by not switching) = 1_
+
+_2 * P(winning by not switching) + P(winning by not switching) = 1_
+
+_3 * P(winning by not switching) = 1_
+
+**P(winning by not switching) = 1/3**
+
+**P(winning by switching) = 2/3**
+
+This makes sense because if you don't switch, you are saying that you think that your original pick has a car behind it. But we already established that that probability was 1/3. Therefore, probablility of the other door having the car has to be 2/3. (The probabilities of all outcomes have to add to 1)
+
+
+Let's try to see what happens when we change the game to include more doors (but still only one winning door). After you make your pick, the host will open enough doors with goats in them until you are faced with two closed doors, with one of them being your original pick.
+
+```{r, echo = FALSE}
+# slider for number of doors
+inputPanel(
+  sliderInput("door_adjust", label = "Number of doors:",
+              min = 3, max = 100, value = 4, step = 1),
+  sliderInput("trial_adjust2", label = "Number of trials:",
+              min = 10, max = 1000, value = 10, step = 10)
+)
+
+# simulation with general number of doors
+
+switch_wins2 = 0
+no_switch_wins2 = 0
+
+renderPlot({
+  doors2 <- 1:input$door_adjust
+  for (i in 1:input$trial_adjust2){
+        prize2 <- sample(doors2)[1]
+        pick2 <- sample(doors2)[1]
+        open2 <- sample(doors2[which(doors2 != pick2 & doors2 != prize2)], input$door_adjust-2)
+        new_pick2 <- doors2[which(doors2 != pick2 & !(doors2 %in% open2))]
+        if (new_pick2 == prize2)
+        {switch_wins2 = switch_wins2 + 1}
+        if (pick2 == prize2)
+        {no_switch_wins2 = no_switch_wins2 + 1}
+  }
+  
+  barplot(c(switch_wins2, no_switch_wins2),
+          names.arg = c("Switch", "Don't Switch"),
+          xlab = "Strategy", ylab = "Number of wins",
+          main = "Comparison of switching strategies")
+})
+```
+
+As the number of doors increase, the chances that your first pick was the winning door becomes lower. Now the host is going to remove all of the losing doors from the game except for one. Would you still want to stick with your original choice or go with the door that the host decided not to open?
+
+Hopefully this makes it clearer that switching is the optimal strategy!
