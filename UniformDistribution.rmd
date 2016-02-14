@@ -1,0 +1,65 @@
+---
+title: "Uniform Distribution"
+author: "Edmund Tran"
+date: "December 4, 2015"
+output: html_document
+runtime: shiny
+---
+
+The uniform distribution is a probability distribution where all values or equal-sized intervals of values have the same probability. It's easy to remember this definition because "uniform" means "the same throughout". Policemen wear uniforms, clothes that are the same for all policemen in that department.
+
+###Discrete case
+The uniform distribution can be discrete or continuous. Let's look at the discrete uniform distribution first. In the discrete case, a finite number of values each have an equal chance of being observed. 
+
+###Discrete examples
+Some examples would be flipping a coin or rolling a die. When we flip a coin, there are two possible values: heads and tails. These two outcomes have an equal chance of being observed, so each outcome has a probability of 1/2. When we roll a fair die, there are six possible outcomes, each with probability 1/6.
+
+###Interactive
+Experiment with different number of values and see how the probability of these values change.
+
+```{r, echo = FALSE}
+# Interactive graph
+inputPanel(
+  sliderInput("num", label = "Number of values", min = 2, max = 20, value = 2, step = 1)
+)
+
+renderPlot({
+  x <- 1:input$num
+  y <- rep(1/input$num, input$num)
+  plot(x, y, xlab = "X", ylab = "P(x)", main="Discrete Uniform Distribution")
+})
+# research plotting parameters to only allow integers for x axis
+```
+
+###Conclusion:
+If a discrete uniform distribution has n values, each value has a probability of 1/n.
+
+###Continuous case
+The uniform distribution can also be continuous. Since there are an infinite number of values in a continuous interval, the probability of a single specific value is infinitesimally small. It makes more sense to talk in terms of sub-intervals of values. In a continuous uniform distribution, all sub-intervals of the same length have the same probability.
+
+###Continuous examples
+An example of a continuous uniform distribution is a game board spinner, such as the one in The Game of Life:
+
+![Game of Life](https://cf.geekdo-images.com/images/pic288405_md.jpg)
+
+The circular spinner is divided into 10 sections. Each section has a 1/10 probability of being landed on.
+
+Another example is the location that a nail may puncture a tire during driving. The surface area of the tire can be thought of as a continuous interval. If we mark off a sub-interval that is 1/5 of the surface area of the tire, there is a 1/5 chance that the next time we run over a nail, it'll be stuck in our sub-interval. If we marked off another sub-interval of the same size, it would have the same probability.
+
+###Interactive
+Experiment with different interval sizes and see how the probability changes
+```{r, echo = FALSE}
+# Interactive graph
+inputPanel(
+  sliderInput("interval", label = "Interval length", min = 1, max = 20, value = 1, step = 1)
+)
+
+renderPlot({
+  x <- seq(0, input$interval, length = 100)
+  hx <- dunif(x, 0, input$interval)
+  plot(x, hx, type = "l", xlab = "X", ylab = "P(x)", main="Probability Density Function")
+})
+```
+
+###Conclusion:
+In a continuous uniform distribution with minimum value a and maximum value b, a sub-interval of length n will have a probability of $$\frac{n}{b-a}$$.
