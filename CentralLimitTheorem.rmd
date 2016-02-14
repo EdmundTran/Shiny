@@ -1,0 +1,120 @@
+---
+title: "Central Limit Theorem"
+author: "Edmund Tran"
+date: "December 3, 2015"
+output: html_document
+runtime: shiny
+---
+###Introduction
+The central limit theorem says that the mean of a large sample of independent random variables will have a normal distribution.
+
+Some things to note:
+
+1.) This will be true even if the random variables themselves don't follow a normal distribution.
+
+2.) The normal distribution of the means will be centered on the mean of the distribution of random variables (the "population mean")
+
+3.) The bigger the sample, the more closely the means will resemble a normal distribution.
+
+4.) The more closely the underlying population resembles a normal distribution, the smaller the sample size is required.  
+  
+###Sample Means  
+Let's look at how the distribution of the means changes with respect to the sample size and the distribution of the population.
+
+```{r, echo=FALSE}
+inputPanel(
+  selectInput("pop_dist", label = "Population distribution",
+              choices = c("Poisson", "Uniform", "Exponential", "Normal", "Normal with Noise"), selected = "Poisson"),
+  
+  sliderInput("sample_size", label = "Sample size:",
+              min = 1, max = 30, value = 2, step = 1),
+  
+  sliderInput("pop_mean", label = "Population mean:",
+              min = 0, max = 10, value = 1, step = 1)
+)
+
+# create empty vector to fill with 1000 means of various sample sizes
+meanVector <- vector(mode = "numeric", 1000)
+
+# create vector of x values for plotting probablility density functions
+x <- seq(-5, 5, length = 100)
+
+renderPlot({
+  # graph probability density functions
+  if (input$pop_dist == "Poisson") {
+    x <- 1:20
+    hx <- dpois(1:20, input$pop_mean)
+  }
+  
+  if (input$pop_dist == "Uniform") {
+    hx <- dunif(x, input$pop_mean - 5, input$pop_mean + 5)
+  }
+  
+  if(input$pop_dist == "Exponential") {
+    hx <- dexp(x, input$pop_mean^(-1))
+  }
+  
+  if(input$pop_dist == "Normal") {
+    hx <- dnorm(x, input$pop_mean)
+  }
+  
+  if(input$pop_dist == "Normal with Noise") {
+    hx <- dnorm(x, input$pop_mean) + runif(100, min = -0.25, max = 0.25)
+  }
+  
+  plot(x, hx, type = "l", xlab = "X", ylab = "P(x)", main = "Probability density function")
+})
+
+renderPlot({
+  # fill vector with means
+  for (i in 1:1000) {
+    if (input$pop_dist == "Poisson") {
+      meanVector[i] <- mean(rpois(input$sample_size, input$pop_mean))
+    }
+    
+    if (input$pop_dist == "Uniform") {
+      meanVector[i] <- mean(runif(input$sample_size,
+                                  min = input$pop_mean - 5,
+                                  max = input$pop_mean + 5))
+    } 
+    
+    if (input$pop_dist == "Exponential") {
+      meanVector[i] <- mean(rexp(input$sample_size,
+                                 rate = input$pop_mean^(-1)))
+    }
+    
+    if (input$pop_dist == "Normal") {
+      meanVector[i] <- mean(rnorm(input$sample_size, mean = input$pop_mean))
+    }
+    
+    if (input$pop_dist == "Normal with Noise") {
+      meanVector[i] <- mean(rnorm(input$sample_size,
+                                  mean = input$pop_mean)
+                            + runif(input$sample_size, min = -0.25, max = 0.25))
+    }
+  } #end of for loop
+
+  hist(meanVector,
+     xlab = "Sample Mean",
+     ylab = "Frequency",
+     main = "Distribution of 1000 Sample Means")
+  
+  # show mean on graph for reference
+  abline(v = input$pop_mean, col = "red")
+})
+```
+
+
+
+*Notes:*
+
+_Range of uniform distribution is population mean plus/minus 5_
+
+_Normal distributions have a standard deviation of 1_  
+  
+  
+###Conclusions
+
+As you increase the sample size, the distribution of means more closely resembles a normal distribution with mean equal to the population mean (indicated by the red line).
+
+If your population was already normally distributed or close to it, then you didn't need as large of a sample size to achieve the normal distribution of means.
